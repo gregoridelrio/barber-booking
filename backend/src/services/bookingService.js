@@ -53,6 +53,29 @@ class BookingService {
 
     return appointment;
   }
+
+  async getAppointmentsByDate(date, barberId = null) {
+    const { Op } = require('sequelize');
+    const startOfDay = new Date(`${date}T00:00:00.000Z`);
+    const endOfDay = new Date(`${date}T23:59:59.999Z`);
+
+    const whereCondition = {
+      startTime: { [Op.between]: [startOfDay, endOfDay] }
+    };
+
+    if (barberId) {
+      whereCondition.barberId = barberId;
+    }
+
+    return await Appointment.findAll({
+      where: whereCondition,
+      include: [
+        { model: Service, attributes: ['name', 'durationMinutes', 'price'] },
+        { model: Barber, attributes: ['name', 'email'] }
+      ],
+      order: [['startTime', 'ASC']]
+    });
+  }
 }
 
 module.exports = new BookingService();

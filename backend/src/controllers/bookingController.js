@@ -31,3 +31,23 @@ exports.createAppointment = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getAppointments = async (req, res, next) => {
+  try {
+    const { date, barberId } = req.query;
+
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({
+        success: false,
+        message: 'El parámetro date es requerido en formato YYYY-MM-DD'
+      });
+    }
+
+    const targetBarberId = req.user.role === 'BARBER' ? req.user.barberId : (barberId || null);
+
+    const appointments = await bookingService.getAppointmentsByDate(date, targetBarberId);
+    res.status(200).json({ success: true, data: appointments });
+  } catch (error) {
+    next(error);
+  }
+};

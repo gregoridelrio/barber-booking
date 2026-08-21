@@ -4,6 +4,7 @@ const cors = require('cors');
 const catalogRoutes = require('./routes/catalogRoutes');
 const availabilityRoutes = require('./routes/availabilityRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+app.use('/api/auth', authRoutes);
 app.use('/api', catalogRoutes);
 app.use('/api', availabilityRoutes);
 app.use('/api', bookingRoutes);

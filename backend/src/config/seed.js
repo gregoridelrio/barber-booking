@@ -1,4 +1,4 @@
-const { sequelize, Service, Barber } = require('../models');
+const { sequelize, Service, Barber, User } = require('../models');
 
 const seedDatabase = async () => {
   try {
@@ -14,13 +14,29 @@ const seedDatabase = async () => {
       console.log('✅ Servicios iniciales creados.');
     }
 
-    const barbersCount = await Barber.count();
-    if (barbersCount === 0) {
-      await Barber.bulkCreate([
-        { name: 'Carlos Mendoza', email: 'carlos@barberia.com' },
-        { name: 'Mateo Silva', email: 'mateo@barberia.com' }
-      ]);
-      console.log('✅ Barberos iniciales creados.');
+    let barber1 = await Barber.findOne({ where: { email: 'carlos@barberia.com' } });
+    if (!barber1) {
+      barber1 = await Barber.create({ name: 'Carlos Mendoza', email: 'carlos@barberia.com' });
+      await Barber.create({ name: 'Mateo Silva', email: 'mateo@barberia.com' });
+      console.log('✅ Barberos creados.');
+    }
+
+    const usersCount = await User.count();
+    if (usersCount === 0) {
+      await User.create({
+        email: 'carlos@barberia.com',
+        password: 'Password123!',
+        role: 'BARBER',
+        barberId: barber1.id
+      });
+
+      await User.create({
+        email: 'admin@barberia.com',
+        password: 'AdminPassword123!',
+        role: 'ADMIN'
+      });
+
+      console.log('✅ Usuarios de Carlos y Admin creados.');
     }
 
     console.log('✅ Base de datos sincronizada y sembrada con éxito.');
