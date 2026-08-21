@@ -3,6 +3,7 @@ const cors = require('cors');
 
 const catalogRoutes = require('./routes/catalogRoutes');
 const availabilityRoutes = require('./routes/availabilityRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.get('/health', (req, res) => {
 
 app.use('/api', catalogRoutes);
 app.use('/api', availabilityRoutes);
+app.use('/api', bookingRoutes);
 
 // Middleware global de manejo de errores
 app.use((err, req, res, next) => {

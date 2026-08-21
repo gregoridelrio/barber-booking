@@ -1,4 +1,5 @@
-const { Barber } = require('../models');
+const { Barber, Appointment } = require('../models');
+const { Op } = require('sequelize');
 
 class AvailabilityService {
   async getBarberAvailability(barberId, date) {
@@ -9,15 +10,36 @@ class AvailabilityService {
       throw error;
     }
 
-    // Horario laboral base: 09:00 a 17:00
+    const startOfDay = new Date(`${date}T00:00:00.000Z`);
+    const endOfDay = new Date(`${date}T23:59:59.999Z`);
+
+    const existingAppointments = await Appointment.findAll({
+      where: {
+        barberId,
+        status: 'CONFIRMED',
+        startTime: { [Op.between]: [startOfDay, endOfDay] }
+      }
+    });
+
     const startHour = 9;
     const endHour = 17;
     const slots = [];
 
     for (let hour = startHour; hour < endHour; hour++) {
       const formattedHour = hour < 10 ? `0${hour}` : hour;
-      slots.push(`${date}T${formattedHour}:00:00.000Z`);
-      slots.push(`${date}T${formattedHour}:30:00.000Z`);
+      
+      const slotTime1 = new Date(`${date}T${formattedHour}:00:00.000Z`);
+      const slotTime2 = new Date(`${date}T${formattedHour}:30:00.000Z`);
+
+      [slotTime1, slotTime2].forEach(slot => {
+        const isOccupied = existingAppointments.some(app => {
+          return slot >= app.startTime && slot < app.endTime;
+        });
+
+        if (!isOccupied) {
+          slots.push(slot.toISOString());
+        }
+      });
     }
 
     return {
